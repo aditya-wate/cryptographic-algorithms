@@ -6,6 +6,7 @@ const int64_t a = 24717;    /* problem of form g^x = a%p, finding x */
  
 int64_t power(int64_t base, int64_t exponent, int64_t modular)
 {
+    // Source: https://gist.github.com/orlp/3551590
     int64_t result = 1;      // Initialize result
 
     base = base % modular;  // Update x if it is more than or
@@ -27,7 +28,7 @@ int64_t power(int64_t base, int64_t exponent, int64_t modular)
 
 int64_t gcd ( int64_t a, int64_t b )
 {
-	//http://www.math.wustl.edu/~victor/mfmm/compaa/gcd.c
+	//Source: http://www.math.wustl.edu/~victor/mfmm/compaa/gcd.c
 	int64_t c;
 	while ( a != 0 ) 
 	{
@@ -38,7 +39,7 @@ int64_t gcd ( int64_t a, int64_t b )
 
 int64_t modInverse(int64_t a, int64_t m)
 {
-	//http://www.geeksforgeeks.org/multiplicative-inverse-under-modulo-m/
+	//Source: http://www.geeksforgeeks.org/multiplicative-inverse-under-modulo-m/
     	int64_t m0 = m, t, q;
     	int64_t x0 = 0, x1 = 1;
     	if (m == 1)
