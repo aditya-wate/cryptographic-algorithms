@@ -6,6 +6,8 @@ bsgs.cpp implements Shanks baby-step giant-step algorithm for the same problem.
 
 bsgs.cpp reuses functions to find Multiplicative order from [4].
 
+The implementations are based on the algorithms explained in: `An Introduction to Mathematical Cryptography by Jeffrey Hoffstein, Jill Pipher, Joseph H. Silverman`
+
 *References:*
 
 [1] Modular exponentiation: https://gist.github.com/orlp/3551590
