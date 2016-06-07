@@ -92,7 +92,7 @@ int main(void) {
      
 		if( x == y ) break;
    	}
-
+	//TODO: Use mpz library for data types as well.
    	int64_t u = (alpha - gamma)%n;
    	int64_t v = (delta - beta) %n;
    	//check if d is >=2 
@@ -110,7 +110,7 @@ int main(void) {
 	
 	for(k = 0;k <= (d-1); k++){
 		int64_t psol = ((w/d)+(k*(n/d)));
-		int64_t sol = power(g,psol,p);
+		int64_t sol = power(g,psol,p); //TODO: Use mpz library for precision. Function available.
 		
 		if(sol==a)
 		{
