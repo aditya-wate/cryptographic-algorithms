@@ -9,6 +9,8 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include "fmpz.h"
+#include "fmpz_mat.h"
  
 typedef unsigned long ulong;
 ulong PRIME_SIZE = 0;
@@ -151,7 +153,8 @@ int main(int argc, char *argv[])
 		mpz_t temp_g ; mpz_init(temp_g);
 		mpz_powm_ui(temp_g,g,num,p);	
 		if(isSmooth(mpz_get_ui(temp_g),primes_till_b))
-		{	
+		{
+			mpz_init_set_ui(B[k],num);	
 			mpz_init_set(gi[k],temp_g);
 			printf("%lu^%lu mod %lu is %lu smooth\n",ul_g,num,ul_p,b);
 			ulong * factors = (ulong *)calloc(default_fact,sizeof(factors));
@@ -198,12 +201,67 @@ int main(int argc, char *argv[])
 			
 		}
 	}
+	/*
 	printf("Matrix A[%lu]\n",m);
 	for(ulong i=0; i<m;i++)
 	{
 		printf(" %lu",mpz_get_ui(A[i]));
+		if((i+1)%3==0)
+		printf("\n");
 	}
 	printf("\n");
+	printf("Matrix B[%lu]\n",k);
+	for(ulong i=0; i<k;i++)
+        {
+                printf(" %lu",mpz_get_ui(B[i]));
+        }
+	*/
+        printf("\n");
+	
+	printf("Creating Matrices for Solving\n");
+	nmod_mat_t Amod;
+	nmod_mat_t Bmod;
+	nmod_mat_t Xmod;
+
+	//fmpz_t rows;	fmpz_init_set_ui(rows, PRIME_SIZE+1);
+	//fmpz_t cols;	fmpz_init_set_ui(cols, PRIME_SIZE);
+	slong arows = PRIME_SIZE+1;
+	slong acols = PRIME_SIZE;
+	mp_limb_t modn = UWORD(ul_p - 1);
+	nmod_mat_init(Amod , arows , acols ,modn);
+	for(ulong j=0;j<PRIME_SIZE;j++)
+	{
+		for(ulong i=0;i<PRIME_SIZE+1;i++)
+		{
+			ulong curr = mpz_get_ui(A[(i*PRIME_SIZE)+j]);
+			mp_limb_t *aij = nmod_mat_entry_ptr(Amod, i, j);
+			*aij = UWORD(curr+0);
+		}
+	}
+	//mp_limb_t *ij = nmod_mat_entry_ptr(Amod, 1, 2);
+	//*ij = UWORD(2); 	
+	nmod_mat_print_pretty(Amod);
+
+	slong brows = PRIME_SIZE+1;
+	slong bcols = 1;
+
+	nmod_mat_init(Bmod , brows , bcols ,modn);
+	for(ulong i = 0; i<k;i++)
+	{
+		ulong curr = mpz_get_ui(B[i]);
+		mp_limb_t *bij = nmod_mat_entry_ptr(Bmod, i, bcols-1);
+		*bij = UWORD(curr+0);
+	}
+	nmod_mat_print_pretty(Bmod);
+
+	slong crows = PRIME_SIZE;
+	slong ccols = 1;
+	
+	nmod_mat_init(Xmod, crows, ccols, modn);
+
+	//if(nmod_mat_solve(Xmod, Amod, Bmod)==1)
+	nmod_mat_print_pretty(Xmod);
+
 	free(primes_till_b);
 	free(A);
 	free(B);
