@@ -118,13 +118,7 @@ int main(int argc, char *argv[])
         mpz_t p;  mpz_init(p);  mpz_set_ui(p,ul_p);
         mpz_t x;  mpz_init(x);  mpz_set_ui(x,ul_x);
         mpz_t n;  mpz_init(n);
-	mpz_t *gi;
-	mpz_t *A;
-	mpz_t *B;
-	//std::vector<std::map<mpz_t,ulong,mpzCompare>> ptoe;
-	//std::vector<int>::iterator it;
-	//it = ptoe.being();
-	//std::map<mpz_t,ulong,mpzCompare> ptoe;	
+	mpz_t *gi, *A, *B, *X;
 	
 	ulong b;
 	printf("Enter B: ");
@@ -139,12 +133,14 @@ int main(int argc, char *argv[])
 	for(ulong i=0;i<PRIME_SIZE;i++)
 		printf("%lu\t",primes_till_b[i]);
 	printf("\n");
+
 	std::map<ulong,ulong> *ptoe = new std::map<ulong,ulong>[10];
 	//initialize gi array with prime size
 	gi = (mpz_t*)malloc(sizeof(mpz_t)*(PRIME_SIZE+1));
 	A = (mpz_t*)calloc(PRIME_SIZE*(PRIME_SIZE+1),sizeof(mpz_t));
 	B = (mpz_t*)calloc(PRIME_SIZE+1,sizeof(mpz_t));
-		
+	X = (mpz_t*)calloc(PRIME_SIZE,sizeof(mpz_t));	
+	
 	//size of row of A matrix
 	ulong m =0;	
 	while(k<PRIME_SIZE+1)	
@@ -160,13 +156,14 @@ int main(int argc, char *argv[])
 			ulong * factors = (ulong *)calloc(default_fact,sizeof(factors));
 			//factorize g^i mod p
 			factorize(mpz_get_ui(temp_g), primes_till_b,factors);
+			
+			/*	
 			printf("Factors: ");
 			for(ulong i=0;i<FACTORS_SIZE;i++)
-			printf("%lu,",factors[i]);
+				printf("%lu,",factors[i]);
+			*/
 			printf("\n");
 		
-			//ulong * factor_exponent = (ulong *)calloc(PRIME_SIZE,sizeof(factor_exponent));
-			//prime_exponents(factors,factor_exponent);
 
 	        	for(ulong i=0;i<FACTORS_SIZE;i++)
 			{
@@ -176,18 +173,14 @@ int main(int argc, char *argv[])
 					++ptoe[k][primes_till_b[j]];
 				}	
 			}
-			/*	
-			for(ulong i=0;i<PRIME_SIZE;i++)
-			{
-				printf("Prime[%lu] exp[%lu]\n",primes_till_b[i],factor_exponent[primes_till_b[i]]);
-			}
-			*/
+			
 			printf("Factors");
 			for(auto const &ent : ptoe[k]) {
                 		printf(" %lu^%lu \t",ent.first,ent.second);
 	        	}
 			printf("\n");
-
+			
+			//Set the A matrix to calculated values
 			for(ulong i=0;i<PRIME_SIZE;i++)
 			{
 				mpz_init_set_ui(A[m],ptoe[k][primes_till_b[i]]);
@@ -197,11 +190,10 @@ int main(int argc, char *argv[])
 			k++;
 			FACTORS_SIZE=0;	
 			free(factors);	
-			//free(factor_exponent);
 			
 		}
 	}
-	/*
+	/*	
 	printf("Matrix A[%lu]\n",m);
 	for(ulong i=0; i<m;i++)
 	{
@@ -215,38 +207,37 @@ int main(int argc, char *argv[])
         {
                 printf(" %lu",mpz_get_ui(B[i]));
         }
-	*/
-        printf("\n");
 	
-	printf("Creating Matrices for Solving\n");
+        printf("\n");
+	*/
+	printf("Creating Matrices for solution of Ax=B\n");
 	nmod_mat_t Amod;
 	nmod_mat_t Bmod;
 	nmod_mat_t Xmod;
 
-	//fmpz_t rows;	fmpz_init_set_ui(rows, PRIME_SIZE+1);
-	//fmpz_t cols;	fmpz_init_set_ui(cols, PRIME_SIZE);
-	slong arows = PRIME_SIZE+1;
+	//Initialize & Populate Matrix Amod	
+	slong arows = PRIME_SIZE; //+1
 	slong acols = PRIME_SIZE;
-	mp_limb_t modn = UWORD(ul_p - 1);
+	mp_limb_t modn = UWORD(ul_p -1);
 	nmod_mat_init(Amod , arows , acols ,modn);
 	for(ulong j=0;j<PRIME_SIZE;j++)
 	{
-		for(ulong i=0;i<PRIME_SIZE+1;i++)
+		for(ulong i=0;i<PRIME_SIZE;i++) //+1
 		{
 			ulong curr = mpz_get_ui(A[(i*PRIME_SIZE)+j]);
 			mp_limb_t *aij = nmod_mat_entry_ptr(Amod, i, j);
 			*aij = UWORD(curr+0);
 		}
 	}
-	//mp_limb_t *ij = nmod_mat_entry_ptr(Amod, 1, 2);
-	//*ij = UWORD(2); 	
+	
 	nmod_mat_print_pretty(Amod);
 
-	slong brows = PRIME_SIZE+1;
+	//Initialize & Polpulate Matrix Bmod
+	slong brows = PRIME_SIZE;//+1
 	slong bcols = 1;
 
 	nmod_mat_init(Bmod , brows , bcols ,modn);
-	for(ulong i = 0; i<k;i++)
+	for(ulong i = 0; i<PRIME_SIZE;i++)//+1
 	{
 		ulong curr = mpz_get_ui(B[i]);
 		mp_limb_t *bij = nmod_mat_entry_ptr(Bmod, i, bcols-1);
@@ -254,17 +245,40 @@ int main(int argc, char *argv[])
 	}
 	nmod_mat_print_pretty(Bmod);
 
+	//Initialize  Matrix Xmod
 	slong crows = PRIME_SIZE;
 	slong ccols = 1;
 	
 	nmod_mat_init(Xmod, crows, ccols, modn);
 
 	//if(nmod_mat_solve(Xmod, Amod, Bmod)==1)
+	nmod_mat_solve(Xmod,Amod,Bmod);
 	nmod_mat_print_pretty(Xmod);
+	
+	for(ulong i = 0; i<PRIME_SIZE;i++)
+        {
+		mpz_init(X[i]);
+		mpz_set_ui(X[i],nmod_mat_get_entry(Xmod,i,bcols-1));
 
+        }
+	
+	
+	//Verify values
+	mpz_t *temp_p = (mpz_t*)calloc(PRIME_SIZE,sizeof(mpz_t));
+	for(ulong i = 0; i<PRIME_SIZE;i++)
+	{	
+		mpz_init(temp_p[i]);
+		mpz_powm_ui(temp_p[i],g,mpz_get_ui(X[i]),p);
+		printf("%lu\n",mpz_get_ui(temp_p[i]));
+	}
+
+	//free memory
 	free(primes_till_b);
 	free(A);
 	free(B);
 	free(gi);
+	nmod_mat_clear(Amod);
+	nmod_mat_clear(Bmod);
+	nmod_mat_clear(Xmod);
 	return 0;
 }
