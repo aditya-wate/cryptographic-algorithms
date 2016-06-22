@@ -8,6 +8,24 @@ bsgs.cpp reuses functions to find Multiplicative order from [4].
 
 The implementations are based on the algorithms explained in: `An Introduction to Mathematical Cryptography by Jeffrey Hoffstein, Jill Pipher and Joseph H. Silverman`
 
+
+Instructions to run code:
+1. Install libmpg for multiprecision:
+    sudo apt-get install libgmp3-dev
+2. Install libmpfr for mutliprecision
+     sudo apt-get install libmpfr-dev libmpfr-doc libmpfr4 libmpfr4-dbg
+3. Install Flint (http://www.flintlib.org/flint-2.5.pdf):
+    a. wget http://www.flintlib.org/flint-2.5.2.tar.gz
+    b. tar -xvf flint-2.5.2.tar.gz
+    c. cd flint-2.5.2/
+    d. ./configure
+    e. make
+    f. make install
+4. Once all libraries are install. Run make:
+    $ make
+The able should create 3 files bsgs (Baby-step-giant-step), pollardrho (Pollard Rho) and ic (Index Calculus). These can be directly run. However, the files are not formatted to accept input. The values need to be changed in the code.
+
+
 *References:*
 
 [1] Modular exponentiation: https://gist.github.com/orlp/3551590
