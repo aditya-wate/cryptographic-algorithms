@@ -10,19 +10,34 @@ The implementations are based on the algorithms explained in: `An Introduction t
 
 
 Instructions to run code:
+
 1. Install libmpg for multiprecision:
-    sudo apt-get install libgmp3-dev
+
+    `sudo apt-get install libgmp3-dev`
+    
+    
 2. Install libmpfr for mutliprecision
-     sudo apt-get install libmpfr-dev libmpfr-doc libmpfr4 libmpfr4-dbg
+
+     `sudo apt-get install libmpfr-dev libmpfr-doc libmpfr4 libmpfr4-dbg`
+     
 3. Install Flint (http://www.flintlib.org/flint-2.5.pdf):
-    a. wget http://www.flintlib.org/flint-2.5.2.tar.gz
-    b. tar -xvf flint-2.5.2.tar.gz
-    c. cd flint-2.5.2/
-    d. ./configure
-    e. make
-    f. make install
+
+    a. `wget http://www.flintlib.org/flint-2.5.2.tar.gz`
+    
+    b. `tar -xvf flint-2.5.2.tar.gz`
+    
+    c. `cd flint-2.5.2/`
+    
+    d. `./configure`
+    
+    e. `make`
+    
+    f. `make install`
+    
 4. Once all libraries are install. Run make:
-    $ make
+
+    `$ make`
+    
 The able should create 3 files bsgs (Baby-step-giant-step), pollardrho (Pollard Rho) and ic (Index Calculus). These can be directly run. However, the files are not formatted to accept input. The values need to be changed in the code.
 
 
