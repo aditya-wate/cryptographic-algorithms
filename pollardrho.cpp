@@ -167,7 +167,7 @@ int main(void) {
 		if(cmp_sol_a == 0)
 		{
 			printf(" ... ... ...\n");
-                        gmp_printf(" Answer to dicrete log is %Zd\n",psol);
+                        gmp_printf(" Answer to discrete log is %Zd\n",psol);
 			mpz_clear(psol);
 			mpz_clear(sol);
 			mpz_clear(wbyd);
