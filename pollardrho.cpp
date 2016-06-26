@@ -1,125 +1,213 @@
 #include<stdio.h>
 #include <inttypes.h>
-const int64_t p = 48611,n= p-1;  /* p  -- prime     */
-const int64_t g = 19;            /* generator       */
-const int64_t a = 24717;    /* problem of form g^x = a%p, finding x */         
+#include <stdlib.h>
+#include <string.h>
+#include <gmp.h>
+#include <map>
+
+typedef unsigned long ulong;
+
+//Sample values
+
+//const int64_t p = 48611,n= p-1;  /* p  -- prime     */
+//const int64_t g = 19;            /* generator       */
+//const int64_t a = 24717;    /* problem of form g^x = a%p, finding x */         
+
+mpz_t p_mp;  //prime
+mpz_t n_mp;  //p-1
+mpz_t g_mp;  //generator
+mpz_t a_mp;  //a
  
-int64_t power(int64_t base, int64_t exponent, int64_t modular)
-{
-    // Source: https://gist.github.com/orlp/3551590
-    int64_t result = 1;      // Initialize result
+void f(mpz_t& x, mpz_t& alpha, mpz_t& beta){
+	int cmp_0_gt,cmp_p, cmp_2p;
+	mpz_t pby3; mpz_init(pby3);
+	mpz_t twopby3; mpz_init(twopby3);
+	mpz_cdiv_q_ui(pby3,p_mp,3);
+	mpz_mul_ui(twopby3,pby3,2);	
 
-    base = base % modular;  // Update x if it is more than or
-                // equal to p
+	cmp_0_gt = mpz_cmp_ui(x,0);
+	cmp_p = mpz_cmp(x,pby3);	
+	cmp_2p = mpz_cmp(x,twopby3);	
 
-    while (exponent > 0)
-    {
-        // If y is odd, multiply x with result
-        if (exponent & 1)
-            result = (result*base) % modular;
-
-        // y must be even now
-        exponent = exponent>>1; // y = y/2
-       base = (base*base) % modular;
-    }
-    return result;
-}
-
-
-int64_t gcd ( int64_t a, int64_t b )
-{
-	//Source: http://www.math.wustl.edu/~victor/mfmm/compaa/gcd.c
-	int64_t c;
-	while ( a != 0 ) 
+	//0<= x < p/3	
+	if(cmp_0_gt>=0 && cmp_p<0)
 	{
-		c = a; a = b%a;  b = c;
+		mpz_mul(x,x,g_mp);
+		mpz_mod(x,x,p_mp);
+		mpz_add_ui(alpha,alpha,1);
+		mpz_mod(alpha,alpha,n_mp);		
 	}
-  	return b;
-}
 
-int64_t modInverse(int64_t a, int64_t m)
-{
-	//Source: http://www.geeksforgeeks.org/multiplicative-inverse-under-modulo-m/
-    	int64_t m0 = m, t, q;
-    	int64_t x0 = 0, x1 = 1;
-    	if (m == 1)
-      	return 0;
-    	while (a > 1)
-    	{
-        	// q is quotient
-        	q = a / m;
-        	t = m;
-        	// m is remainder now, process same as
-        	// Euclid's algo
-        	m = a % m, a = t;
-		t = x0;
-        	x0 = x1 - q * x0;
-        	x1 = t;
-    	}	
-    	// Make x1 positive
-    	if (x1 < 0)
-       		x1 += m0;
-    	return x1;
-}
+	//p/3 <= x < 2p/3
+	else if(cmp_p>=0 && cmp_2p<0)
+	{
+		mpz_mul(x,x,x);
+                mpz_mod(x,x,p_mp);
+		mpz_mul_ui(alpha,alpha,2);
+                mpz_mod(alpha,alpha,n_mp);
+		mpz_mul_ui(beta,beta,2);
+                mpz_mod(beta,beta,n_mp);
 
-void fx(int64_t& x, int64_t& alpha, int64_t& beta){
-	if(x>=0 && x<(p/3))
-	{
-		x = x*g % p;  
-		alpha = (alpha+1) % n;
 	}
-	else if(x>=(p/3) && x < ((2*p)/3))
-	{
-		x = x*x % p;  
-		alpha =  alpha*2  % n;  
-		beta =  beta*2  % n;
-	}
+	//2p/3 < x < p
 	else
 	{
-		x = x*a  % p;                  
-		beta = (beta+1) % n;
+		mpz_mul(x,x,a_mp);
+                mpz_mod(x,x,p_mp);
+                mpz_add_ui(beta,beta,1);
+                mpz_mod(beta,beta,n_mp);
+
 	}
+	
+	//freeing memory
+	mpz_clear(pby3);
+	mpz_clear(twopby3);
 }
 
 int main(void) {
-   	int64_t x=1, alpha=0, beta=0, k;
-   	int64_t y=x, gamma=alpha, delta=beta;
-   	for(int i = 1; i < n; ++i ) {
-     		fx( x, alpha, beta );
-     		fx( y, gamma, delta );
-     		fx( y, gamma, delta );
-     		printf( " %3d"  " %"PRIu64 " %"PRIu64 " %"PRIu64 " %"PRIu64 " %"PRIu64 " %"PRIu64"\n", i, x, y, alpha, beta, gamma, delta );
-     
-		if( x == y ) break;
-   	}
-	//TODO: Use mpz library for data types as well.
-   	int64_t u = (alpha - gamma)%n;
-   	int64_t v = (delta - beta) %n;
-   	//check if d is >=2 
-   	int64_t d = gcd(v,n);
-  	printf("\n u=%"PRIu64"\n v=%"PRIu64"\n d=%"PRIu64"\n", u,v,d);
-   	
-	//extended eucledean for gcd d, we divide by d
-   	int64_t s = modInverse(v/d,n/d);
-   	
-	printf(" s=%"PRIu64"\n",s);
-   	
-	int64_t w = (s*u)%n;
- 	
-	printf(" w=%"PRIu64"\n",w);
 	
-	for(k = 0;k <= (d-1); k++){
-		int64_t psol = ((w/d)+(k*(n/d)));
-		int64_t sol = power(g,psol,p); //TODO: Use mpz library for precision. Function available.
-		
-		if(sol==a)
+	//mpz_init_set_ui(p_mp, p);
+	mpz_init(p_mp);
+	mpz_init(n_mp);
+	mpz_init(g_mp);
+	mpz_init(a_mp);
+	printf("g^x = a(mod p)\n");
+	printf("We will find x using Pollard Rho method\n...\n");
+	printf("Enter p = ");
+	gmp_scanf("%Zd",p_mp);
+
+	mpz_sub_ui(n_mp,p_mp,1);
+	printf("Enter g = ");
+	gmp_scanf("%Zd",g_mp);
+
+	printf("Enter a = ");
+	gmp_scanf("%Zd",a_mp);
+	
+	mpz_t x, alpha, beta, k, y, gamma, delta;
+
+	mpz_init_set_ui(x,1);
+	mpz_init_set_ui(alpha,0);
+	mpz_init_set_ui(beta,0);
+	mpz_init_set_ui(k,0);
+
+	mpz_init_set(y,x);
+	mpz_init_set(gamma,alpha);
+	mpz_init_set(delta,beta);
+
+	mpz_t i; mpz_init_set_ui(i,1);
+	int cmp_i_n = -1;
+	int cmp_x_y = -1;
+
+	//calling function once for x and twice for y	
+	while(cmp_i_n<1)
+	{
+		f(x,alpha,beta);
+		f(y,gamma,delta);
+		f(y,gamma,delta);
+		gmp_printf("%Zd %Zd %Zd %Zd %Zd %Zd %Zd \n", i,x,y,alpha,beta,gamma,delta);
+	
+		mpz_add_ui(i,i,1);
+		cmp_i_n = mpz_cmp(i,n_mp);
+
+		cmp_x_y = mpz_cmp(x,y);
+		if(cmp_x_y==0) break;	
+	}
+
+	mpz_t u, v, w, d, s;
+	mpz_init(u);
+	mpz_init(v);
+	mpz_init(w);
+	mpz_init(d);
+	mpz_init(s);
+	
+	//u = alpha-gamma%n
+	mpz_sub(u,alpha,gamma);
+	mpz_mod(u,u,n_mp);
+
+	//v = beta-delta%n
+	mpz_sub(v,delta,beta);
+	mpz_mod(v,v,n_mp);
+
+	//d = gcd(v,n)
+	mpz_gcd(d,v,n_mp);
+	gmp_printf("u=%Zd v=%Zd d=%Zd\n", u,v,d);	
+
+	//extended eucledean for gcd d, we divide by d
+	mpz_t vbyd, nbyd;
+	mpz_init(vbyd);
+	mpz_init(nbyd);
+	
+	//calculate v/d
+	mpz_cdiv_q(vbyd,v,d);
+
+	//calculate n/d
+	mpz_cdiv_q(nbyd,n_mp,d);
+	
+	//calculate inverse of v/d mod n/d 
+	mpz_invert(s,vbyd,nbyd);
+
+	//w=s*u%n
+	mpz_mul(w,s,u);
+	mpz_mod(w,w,n_mp);
+	
+	gmp_printf("w=%Zd \n",w);
+
+	int cmp_k_d = -1;
+	int cmp_sol_a = -1;
+        while(cmp_k_d<1)
+	{
+		mpz_t psol;	mpz_init(psol);
+		mpz_t sol;	mpz_init(sol);
+		mpz_t wbyd;	mpz_init(wbyd);		mpz_cdiv_q(wbyd,w,d);
+		mpz_t knbyd;	mpz_init(knbyd);	mpz_mul(knbyd,k,nbyd);
+		mpz_add(psol, wbyd, knbyd);
+		mpz_powm(sol,g_mp,psol,p_mp);
+
+		cmp_sol_a = mpz_cmp(sol,a_mp);
+		if(cmp_sol_a == 0)
 		{
 			printf(" ... ... ...\n");
-			printf(" Answer to dicrete log is %"PRIu64"\n",sol);
-			break;
+                        gmp_printf(" Answer to dicrete log is %Zd\n",psol);
+			mpz_clear(psol);
+			mpz_clear(sol);
+			mpz_clear(wbyd);
+			mpz_clear(knbyd);
+                        break;
+
 		}
+		mpz_add_ui(k,k,1);		
+		cmp_k_d = mpz_cmp(k,d);
+
+		//freeing memory
+		mpz_clear(psol);
+                mpz_clear(sol);
+                mpz_clear(wbyd);
+                mpz_clear(knbyd);
+
 	}
-        if(k==d)
-		printf(" No solution to the discrete log.\n"); 
+	
+	if(cmp_k_d==0)
+		printf(" No solution to the discrete log.\n");
+	
+	//freeing memory
+	mpz_clear(x);
+	mpz_clear(y);
+	mpz_clear(u);
+	mpz_clear(v);
+	mpz_clear(w);
+	mpz_clear(d);
+	mpz_clear(s);
+	mpz_clear(vbyd);
+	mpz_clear(nbyd);
+	mpz_clear(alpha);
+	mpz_clear(beta);
+	mpz_clear(gamma);
+	mpz_clear(delta);
+	mpz_clear(i);
+	mpz_clear(p_mp);
+	mpz_clear(a_mp);
+	mpz_clear(n_mp);
+	mpz_clear(g_mp);
+	
    	return 0;
 }
