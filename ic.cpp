@@ -296,11 +296,11 @@ int main(int argc, char *argv[])
 	}
 	//TODO: delete below hard-code
 
-	
+	/*
 	mpz_set_ui(solutions[0],5733);
 	mpz_set_ui(solutions[1],15750);
 	mpz_set_ui(solutions[2],6277);
-
+	*/
 	std::map<ulong,ulong> log;
 
 	 for(ulong j=0;j<PRIME_SIZE;j++)
